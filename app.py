@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import pickle
-import os
 import requests
 from io import BytesIO
+import os
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -78,16 +78,15 @@ margin-top:40px;
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    # Google Drive direct download URL
+    # Google Drive direct download link
     url = "https://drive.google.com/uc?export=download&id=1LVlkpAZJROq1KQLzaVxaNDQ9iqpH7yhh"
-
-    # Download the file
-    r = requests.get(url)
-    if r.status_code != 200:
-        st.error("Failed to download model file.")
+    try:
+        r = requests.get(url)
+        r.raise_for_status()  # ensure successful download
+        package = pickle.load(BytesIO(r.content))
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
         st.stop()
-
-    package = pickle.load(BytesIO(r.content))
     return package
 
 package = load_model()
@@ -96,13 +95,12 @@ label_encoders = package["label_encoders"]
 selected_features = package["selected_features"]
 
 # ---------------- PAGE HEADER ----------------
-st.markdown('<div class="main-container">',unsafe_allow_html=True)
-st.markdown('<p class="title">🚗 AI Car Price Prediction</p>',unsafe_allow_html=True)
+st.markdown('<div class="main-container">', unsafe_allow_html=True)
+st.markdown('<p class="title">🚗 AI Car Price Prediction</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Predict resale value of a car using Machine Learning (Random Forest Model)</p>', unsafe_allow_html=True)
 
 # ---------------- INPUT SECTION ----------------
-st.markdown('<p class="section-title">Enter Car Details</p>',unsafe_allow_html=True)
-
+st.markdown('<p class="section-title">Enter Car Details</p>', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 with col1:
@@ -132,16 +130,12 @@ if predict_button:
         "Gear box type": gear_box,
         "Airbags": airbags
     }
-
     df = pd.DataFrame([input_data])
-
     cat_cols = ["Manufacturer", "Category", "Fuel type", "Gear box type"]
     for col in cat_cols:
         df[col] = label_encoders[col].transform(df[col])
-
     df = df[selected_features]
     prediction = model.predict(df)[0]
-
     st.markdown(f'<div class="prediction-card">Estimated Car Price 💰<br>${prediction:,.2f}</div>', unsafe_allow_html=True)
 
 # ---------------- MODEL INFO ----------------
