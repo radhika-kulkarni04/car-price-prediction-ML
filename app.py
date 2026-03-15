@@ -3,7 +3,6 @@ import pandas as pd
 import pickle
 import requests
 from io import BytesIO
-import os
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -16,80 +15,81 @@ st.set_page_config(
 st.markdown("""
 <style>
 body {
-background: linear-gradient(120deg,#1F4E79,#4A90E2);
+    background: linear-gradient(120deg,#1F4E79,#4A90E2);
 }
 .main-container {
-background-color: rgba(255,255,255,0.95);
-padding:40px;
-border-radius:18px;
-box-shadow:0px 10px 30px rgba(0,0,0,0.2);
+    background-color: rgba(255,255,255,0.95);
+    padding:40px;
+    border-radius:18px;
+    box-shadow:0px 10px 30px rgba(0,0,0,0.2);
 }
 .title {
-text-align:center;
-font-size:48px;
-font-weight:800;
-color:#1F4E79;
+    text-align:center;
+    font-size:48px;
+    font-weight:800;
+    color:#1F4E79;
 }
 .subtitle {
-text-align:center;
-font-size:18px;
-color:#555;
-margin-bottom:40px;
+    text-align:center;
+    font-size:18px;
+    color:#555;
+    margin-bottom:40px;
 }
 .section-title{
-font-size:26px;
-font-weight:700;
-margin-bottom:15px;
-color:#1F4E79;
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:15px;
+    color:#1F4E79;
 }
 .prediction-card {
-background: linear-gradient(135deg,#43cea2,#185a9d);
-padding:30px;
-border-radius:15px;
-text-align:center;
-font-size:30px;
-font-weight:bold;
-color:white;
-margin-top:20px;
-box-shadow:0px 6px 20px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg,#43cea2,#185a9d);
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    font-size:30px;
+    font-weight:bold;
+    color:white;
+    margin-top:20px;
+    box-shadow:0px 6px 20px rgba(0,0,0,0.2);
 }
 .stButton>button {
-background: linear-gradient(135deg,#1F4E79,#4A90E2);
-color:white;
-font-size:20px;
-font-weight:600;
-border-radius:12px;
-height:55px;
-width:100%;
-border:none;
+    background: linear-gradient(135deg,#1F4E79,#4A90E2);
+    color:white;
+    font-size:20px;
+    font-weight:600;
+    border-radius:12px;
+    height:55px;
+    width:100%;
+    border:none;
 }
 .stButton>button:hover{
-transform:scale(1.02);
-background: linear-gradient(135deg,#154360,#1F4E79);
+    transform:scale(1.02);
+    background: linear-gradient(135deg,#154360,#1F4E79);
 }
 .footer{
-text-align:center;
-color:gray;
-margin-top:40px;
+    text-align:center;
+    color:gray;
+    margin-top:40px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- LOAD MODEL ----------------
+# ---------------- LOAD MODEL FROM GOOGLE DRIVE ----------------
+MODEL_URL = "https://drive.google.com/uc?export=download&id=1LVlkpAZJROq1KQLzaVxaNDQ9iqpH7yhh"
+
 @st.cache_resource
 def load_model():
-    # Google Drive direct download link
-    url = "https://drive.google.com/uc?export=download&id=1LVlkpAZJROq1KQLzaVxaNDQ9iqpH7yhh"
     try:
-        r = requests.get(url)
-        r.raise_for_status()  # ensure successful download
+        r = requests.get(MODEL_URL)
+        r.raise_for_status()
         package = pickle.load(BytesIO(r.content))
+        return package
     except Exception as e:
         st.error(f"Error loading model: {e}")
         st.stop()
-    return package
 
 package = load_model()
+
 model = package["model"]
 label_encoders = package["label_encoders"]
 selected_features = package["selected_features"]
@@ -144,7 +144,7 @@ st.markdown('<p class="section-title">About This AI Model</p>', unsafe_allow_htm
 st.write("""
 This application predicts the **resale price of a car** using a Machine Learning model.
 
-Key features of the system:
+Key features:
 • Advanced feature preprocessing and cleaning  
 • Feature selection using statistical methods  
 • Machine Learning prediction using Random Forest  
